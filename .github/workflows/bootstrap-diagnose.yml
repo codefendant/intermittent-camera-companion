@@ -1,0 +1,27 @@
+name: Diagnose ICC bootstrap
+
+on:
+  push:
+    paths:
+      - '.github/workflows/bootstrap-diagnose.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reconstruct bootstrap archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .bootstrap/min{00..20}.b64 | base64 --decode > /tmp/icc-bootstrap.zip
+          echo "size=$(stat -c %s /tmp/icc-bootstrap.zip)"
+          sha256sum /tmp/icc-bootstrap.zip
+          file /tmp/icc-bootstrap.zip
+          unzip -t /tmp/icc-bootstrap.zip
+          echo '--- archive root ---'
+          unzip -Z1 /tmp/icc-bootstrap.zip | head -80
